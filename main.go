@@ -13,5 +13,5 @@ func main() {
 }
 
 func Home(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	w.Write([]byte("I HOME !"))
+	w.Write([]byte("I HOME !?"))
 }
