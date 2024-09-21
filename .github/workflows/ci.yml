@@ -52,7 +52,7 @@ jobs:  # Описание задач (jobs)
 
       # 8. Upload the build artifact (сохраняем собранное приложение как артефакт)
       - name: Upload build  # Название шага - сохранение артефакта сборки
-        uses: actions/upload-artifact@v2  # Используем действие для загрузки артефактов
+        uses: actions/upload-artifact@v3  # Используем действие для загрузки артефактов
         with:
           name: myapp  # Имя артефакта
           path: ./myapp  # Путь к файлу, который будет загружен
