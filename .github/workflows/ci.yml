@@ -57,6 +57,7 @@ jobs:  # Описание задач (jobs)
           name: myapp  # Имя артефакта
           path: ./myapp  # Путь к файлу, который будет загружен
 
+
   # Deployment job (опционально)
   deploy:  # Название задачи - деплой проекта
     runs-on: ubuntu-latest  # Используем виртуальную машину с Ubuntu для выполнения задачи
@@ -75,7 +76,6 @@ jobs:  # Описание задач (jobs)
           username: ${{ secrets.SERVER_USER }}  # Имя пользователя для SSH, хранится в секретах
           password: ${{ secrets.SERVER_PASSWORD }}  # Используем пароль для подключения
           script: |  # Скрипт, который выполняется на сервере
-            ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
             sudo systemctl stop myapp || true  # Останавливаем текущее приложение (если оно работает)
-            scp ./myapp ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/usr/local/bin/myapp  # Копируем бинарный файл на сервер
+            cp ./myapp /usr/local/bin/myapp  # Копируем бинарный файл на сервер
             sudo systemctl start myapp  # Запускаем приложение как службу на сервере
