@@ -64,7 +64,7 @@ jobs:  # Описание задач (jobs)
 
     steps:  # Шаги внутри задачи деплоя
       - name: Download artifact  # Название шага - загрузка артефакта
-        uses: actions/download-artifact@v2  # Используем действие для загрузки артефакта сборки
+        uses: actions/download-artifact@v3  # Используем действие для загрузки артефакта сборки
         with:
           name: myapp  # Указываем, какой артефакт загрузить
 
