@@ -1,28 +1,80 @@
-name: Go CI Pipeline
+name: Go CI/CD Pipeline  # Название пайплайна
 
-on:
-  push:
+on:  # Определяем, когда запускать пайплайн
+  push:  # Запускать при пуше
     branches:
-      - master
-  pull_request:
+      - main  # Запускать только если пуш произошел в ветку main
+  pull_request:  # Запускать при создании pull request
     branches:
-      - master
+      - main  # Запускать только если pull request для ветки main
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
+jobs:  # Описание задач (jobs)
+  build:  # Название задачи - сборка проекта
+    runs-on: ubuntu-latest  # Используем виртуальную машину с Ubuntu для выполнения задачи
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+    steps:  # Шаги внутри задачи
+      # 1. Checkout the repository code
+      - name: Checkout code  # Название шага - клонирование кода
+        uses: actions/checkout@v2  # Используем готовое действие для клонирования репозитория
+
+      # 2. Set up Go environment (установка окружения Go)
+      - name: Set up Go  # Название шага - установка окружения Go
+        uses: actions/setup-go@v3  # Используем готовое действие для настройки Go
         with:
-          go-version: 1.20
+          go-version: 1.20  # Указываем версию Go, которая будет установлена
 
-      - name: Install dependencies
-        run: go mod tidy
+      # 3. Cache Go modules (кэшируем модули Go для ускорения сборки)
+      - name: Cache Go modules  # Название шага - кэширование модулей Go
+        uses: actions/cache@v2  # Используем действие для кэширования
+        with:
+          path: |  # Путь к папкам для кэширования
+            ~/.cache/go-build  # Кэшируем папку с результатами сборки
+            ~/go/pkg/mod  # Кэшируем папку с загруженными модулями
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}  # Уникальный ключ кэша на основе ОС и файла зависимостей
+          restore-keys: |
+            ${{ runner.os }}-go-  # Восстановление кэша при совпадении с ОС
 
-      - name: Run tests
-        run: go test ./...
+      # 4. Install dependencies (загружаем зависимости)
+      - name: Install dependencies  # Название шага - установка зависимостей
+        run: go mod tidy  # Команда для загрузки всех зависимостей, указанных в go.mod
 
-      - name: Build project
-        run: go build -o myapp
+      # 5. Run Linting (проверка на стандарты кода)
+      - name: Lint code  # Название шага - проверка кода на соответствие стандартам
+        run: go install golang.org/x/lint/golint@latest && golint ./...  # Устанавливаем golint и проверяем весь проект
+
+      # 6. Run tests (запускаем тесты)
+      - name: Run tests  # Название шага - запуск тестов
+        run: go test -v ./...  # Запуск тестов с подробным выводом информации
+
+      # 7. Build the project (собираем проект)
+      - name: Build the app  # Название шага - сборка приложения
+        run: go build -v -o myapp  # Сборка проекта в исполняемый файл "myapp"
+
+      # 8. Upload the build artifact (сохраняем собранное приложение как артефакт)
+      - name: Upload build  # Название шага - сохранение артефакта сборки
+        uses: actions/upload-artifact@v2  # Используем действие для загрузки артефактов
+        with:
+          name: myapp  # Имя артефакта
+          path: ./myapp  # Путь к файлу, который будет загружен
+
+  # Deployment job (опционально)
+  deploy:  # Название задачи - деплой проекта
+    runs-on: ubuntu-latest  # Используем виртуальную машину с Ubuntu для выполнения задачи
+    needs: build  # Указываем, что эта задача должна быть выполнена только после успешной сборки
+
+    steps:  # Шаги внутри задачи деплоя
+      - name: Download artifact  # Название шага - загрузка артефакта
+        uses: actions/download-artifact@v2  # Используем действие для загрузки артефакта сборки
+        with:
+          name: myapp  # Указываем, какой артефакт загрузить
+
+      - name: Deploy to server  # Название шага - деплой на сервер
+        uses: appleboy/ssh-action@v0.1.3  # Используем SSH-действие для подключения к серверу
+        with:
+          host: ${{ secrets.SERVER_HOST }}  # IP-адрес сервера, хранится в секретах репозитория
+          username: ${{ secrets.SERVER_USER }}  # Имя пользователя для SSH, хранится в секретах
+          key: ${{ secrets.SERVER_SSH_KEY }}  # SSH-ключ для подключения, хранится в секретах
+          script: |  # Скрипт, который выполняется на сервере
+            sudo systemctl stop myapp || true  # Останавливаем текущее приложение (если оно работает)
+            scp ./myapp ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/usr/local/bin/myapp  # Копируем бинарный файл на сервер
+            sudo systemctl start myapp  # Запускаем приложение как службу на сервере
