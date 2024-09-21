@@ -85,5 +85,6 @@ jobs:  # Описание задач (jobs)
           username: ${{ secrets.SERVER_USER }}
           password: ${{ secrets.SERVER_PASSWORD }}  # Используем пароль для подключения
           script: |  # Скрипт для выполнения на сервере
-            sudo systemctl stop myapp || true  # Останавливаем текущее приложение (если оно работает)
-            sudo systemctl start myapp  # Запускаем приложение как службу на сервере
+            sudo systemctl stop myapp || true  # Останавливаем службу, если она работает
+            sudo chmod +x /usr/local/bin/myapp  # Даем права на выполнение (если нужно)
+            sudo systemctl start myapp  # Запускаем службу
