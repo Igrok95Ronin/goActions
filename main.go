@@ -7,11 +7,11 @@ import (
 
 func main() {
 	router := httprouter.New()
-	router.GET("/", Home)
+	router.GET("/", home)
 
 	http.ListenAndServe(":8080", router)
 }
 
-func Home(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func home(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	w.Write([]byte("Rizvan"))
 }
