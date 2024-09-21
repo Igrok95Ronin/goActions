@@ -3,10 +3,10 @@ name: Go CI/CD Pipeline  # Название пайплайна
 on:  # Определяем, когда запускать пайплайн
   push:  # Запускать при пуше
     branches:
-      - main  # Запускать только если пуш произошел в ветку main
+      - master  # Запускать только если пуш произошел в ветку main
   pull_request:  # Запускать при создании pull request
     branches:
-      - main  # Запускать только если pull request для ветки main
+      - master  # Запускать только если pull request для ветки main
 
 jobs:  # Описание задач (jobs)
   build:  # Название задачи - сборка проекта
